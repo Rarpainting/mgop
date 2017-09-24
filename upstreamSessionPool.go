@@ -6,9 +6,9 @@ import (
 )
 
 type upstreamSessionPool interface {
-	appendSession(*sessionWrapper)
-	getBest() *sessionWrapper
-	foreach(func(sw *sessionWrapper), bool)
+	appendSession(*SessionWrapper)
+	getBest() *SessionWrapper
+	foreach(func(sw *SessionWrapper), bool)
 }
 
 /**
@@ -17,13 +17,13 @@ suppose support for insert,update and findAndModify is OK
  */
 
 type pollingSessionPool struct {
-	wrappers []*sessionWrapper
+	wrappers []*SessionWrapper
 	maxSize  int
 	next     int
 	mutex    sync.RWMutex
 }
 
-func (p *pollingSessionPool)getBest() *sessionWrapper {
+func (p *pollingSessionPool)getBest() *SessionWrapper {
 	p.mutex.Lock()
 	p.next = (p.next + 1) % len(p.wrappers)
 	cur := p.next
@@ -33,7 +33,7 @@ func (p *pollingSessionPool)getBest() *sessionWrapper {
 	return p.wrappers[cur]
 }
 
-func (p *pollingSessionPool)foreach(eachFunc func(sw *sessionWrapper), readonly bool) {
+func (p *pollingSessionPool)foreach(eachFunc func(sw *SessionWrapper), readonly bool) {
 	if readonly {
 		p.mutex.RLock()
 		defer p.mutex.RUnlock()
@@ -51,11 +51,11 @@ func newPollingSessionPool(maxSize int) upstreamSessionPool {
 		maxSize:maxSize,
 		next:-1,
 	}
-	p.wrappers = make([]*sessionWrapper, 0, maxSize)
+	p.wrappers = make([]*SessionWrapper, 0, maxSize)
 	return p
 }
 
-func (p *pollingSessionPool)appendSession(sw *sessionWrapper) {
+func (p *pollingSessionPool)appendSession(sw *SessionWrapper) {
 	p.mutex.Lock()
 	p.wrappers = append(p.wrappers, sw)
 	p.mutex.Unlock()
