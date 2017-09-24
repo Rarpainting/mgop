@@ -8,7 +8,7 @@ import (
 )
 
 type SessionPool interface {
-	AcquireSession() *sessionWrapper
+	AcquireSession() *SessionWrapper
 	Size() int
 }
 
@@ -84,7 +84,7 @@ func DialStrongPool(url string, fixedSize int) (SessionPool, error) {
 	return p, nil
 }
 
-func (p *StrongSessionPool) AcquireSession() *sessionWrapper {
+func (p *StrongSessionPool) AcquireSession() *SessionWrapper {
 	p.rw.RLock()
 	defer p.rw.RUnlock()
 	return p.poolmap[mgo.Strong].getBest()
@@ -113,12 +113,12 @@ func (p *StrongSessionPool)pinger() {
 }
 
 // TODO
-func (p *StrongSessionPool) acquireSessionWithMode(mode int) (*sessionWrapper, error) {
+func (p *StrongSessionPool) acquireSessionWithMode(mode int) (*SessionWrapper, error) {
 	return nil, nil
 }
 
 // TODO
-func (p *StrongSessionPool) acquireSessionWithFraction(i int32) *sessionWrapper {
+func (p *StrongSessionPool) acquireSessionWithFraction(i int32) *SessionWrapper {
 	return nil
 }
 
