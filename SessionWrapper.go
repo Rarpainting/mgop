@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 )
 
-type sessionWrapper struct {
+type SessionWrapper struct {
 	s        *mgo.Session
 	belongTo SessionPool
 	ref      int32
@@ -13,26 +13,26 @@ type sessionWrapper struct {
 	host     string // which host the session is connect to
 }
 
-func (sw *sessionWrapper) Release() {
+func (sw *SessionWrapper) Release() {
 	sw.ReleaseWithFraction(-1)
 }
 
-func (sw *sessionWrapper) ReleaseWithFraction(i int32) {
+func (sw *SessionWrapper) ReleaseWithFraction(i int32) {
 	atomic.AddInt32(&sw.ref, i)
 }
 
-func (sw *sessionWrapper) atomicAcquire() bool {
+func (sw *SessionWrapper) atomicAcquire() bool {
 	atomic.AddInt32(&sw.ref, 1)
 	return true
 }
 
 // only allowed native session operation
-func (sw *sessionWrapper)DB(name string) *mgo.Database {
+func (sw *SessionWrapper)DB(name string) *mgo.Database {
 	return sw.s.DB(name)
 }
 
 // if a reset happen ,return true else return false
-func (sw *sessionWrapper)refreshIfNotMaster() bool {
+func (sw *SessionWrapper)refreshIfNotMaster() bool {
 	result := &isMasterResult{}
 	sw.s.Run("ismaster", result)
 	if result.IsMaster {
@@ -42,14 +42,14 @@ func (sw *sessionWrapper)refreshIfNotMaster() bool {
 	return true
 }
 
-func (sw *sessionWrapper)refresh() {
+func (sw *SessionWrapper)refresh() {
 	sw.s.Refresh()
 	sw.s.Ping()
 }
 
-func newSessionWrapper(p SessionPool, session *mgo.Session) *sessionWrapper {
+func newSessionWrapper(p SessionPool, session *mgo.Session) *SessionWrapper {
 
-	sess := &sessionWrapper{
+	sess := &SessionWrapper{
 		s :session,
 		belongTo:p,
 		ref:0,
